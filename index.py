@@ -50,19 +50,60 @@ def on_search():
     output_text.delete(1.0, tk.END)
     find_row_by_name(name_to_find, output_text)
 
+def create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=25, **kwargs):
+    """Draw a rounded rectangle on the canvas."""
+    points = [
+        x1+radius, y1,
+        x1+radius, y1,
+        x2-radius, y1,
+        x2-radius, y1,
+        x2, y1,
+        x2, y1+radius,
+        x2, y1+radius,
+        x2, y2-radius,
+        x2, y2-radius,
+        x2, y2,
+        x2-radius, y2,
+        x2-radius, y2,
+        x1+radius, y2,
+        x1+radius, y2,
+        x1, y2,
+        x1, y2-radius,
+        x1, y2-radius,
+        x1, y1+radius,
+        x1, y1+radius,
+        x1, y1
+    ]
+    return canvas.create_polygon(points, smooth=True, **kwargs)
+
 root = tk.Tk()
 root.title("Airtable Record Finder")
+root.configure(bg="#f0f0f0")
+root.geometry("600x500")
 
-name_label = tk.Label(root, text="Enter the Github Username you want to search for:")
-name_label.pack(pady=5)
+main_frame = tk.Frame(root, padx=20, pady=20, bg="#f0f0f0")
+main_frame.pack(expand=True, fill=tk.BOTH)
 
-name_entry = tk.Entry(root, width=50)
-name_entry.pack(pady=5)
+name_label = tk.Label(main_frame, text="Enter the Github Username you want to search for:", bg="#f0f0f0", font=("Arial", 12))
+name_label.pack(anchor="center", pady=(0, 10))
 
-search_button = tk.Button(root, text="Search", command=on_search)
-search_button.pack(pady=5)
+entry_canvas = tk.Canvas(main_frame, width=370, height=50, bg="#f0f0f0", highlightthickness=0)
+entry_canvas.pack(anchor="center", pady=(0, 10))
+create_rounded_rectangle(entry_canvas, 0, 0, 370, 30, radius=15, fill="white", outline="white")
 
-output_text = scrolledtext.ScrolledText(root, width=60, height=20)
-output_text.pack(pady=10)
+name_entry = tk.Entry(entry_canvas, font=("Arial", 12), bd=0, highlightthickness=0, relief="flat", justify="center")
+entry_canvas.create_window(185, 15, window=name_entry, width=350, height=30)
+
+search_button = tk.Button(main_frame, text="Search", command=on_search, bg="#4CAF50", fg="white", font=("Arial", 12, "bold"), padx=10, pady=5)
+search_button.pack(anchor="center", pady=(0, 10))
+
+output_canvas = tk.Canvas(main_frame, width=500, height=300, bg="#f0f0f0", highlightthickness=0)
+output_canvas.pack(anchor="center", pady=(10, 0))
+create_rounded_rectangle(output_canvas, 0, 0, 500, 300, radius=15, fill="white", outline="white")
+
+text_frame = tk.Frame(output_canvas, bg="white", bd=0)
+output_canvas.create_window((250, 150), window=text_frame, anchor="center")
+output_text = scrolledtext.ScrolledText(text_frame, font=("Courier", 10), bd=0, highlightthickness=0, wrap=tk.WORD)
+output_text.pack(fill="both", expand=True)
 
 root.mainloop()
