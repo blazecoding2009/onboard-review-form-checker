@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from airtable import Airtable
 import tkinter as tk
 from tkinter import messagebox, scrolledtext
+import webbrowser
 
 load_dotenv()
 
@@ -14,6 +15,16 @@ COLUMN_NAME = os.getenv('COLUMN_NAME')
 
 # Start the Airtable client
 airtable = Airtable(BASE_ID, TABLE_NAME, api_key=AIRTABLE_ACCESS_TOKEN)
+
+def open_link(url):
+    webbrowser.open_new(url)
+
+def insert_hyperlink(text_widget, display_text, url):
+    """Insert a clickable hyperlink into the text widget with custom display text."""
+    text_widget.tag_configure("hyperlink", foreground="blue", underline=True)
+    text_widget.insert(tk.END, display_text, ("hyperlink",))
+    text_widget.tag_bind("hyperlink", "<Button-1>", lambda e: open_link(url))
+    text_widget.insert(tk.END, "\n")
 
 def find_row_by_name(name, output_text):
     formula = f"{{{COLUMN_NAME}}}='{name}'"
@@ -33,7 +44,13 @@ def find_row_by_name(name, output_text):
             output_text.insert(tk.END, f"Name: {name}\n")
             output_text.insert(tk.END, f"Date of Birth: {dob}\n")
             output_text.insert(tk.END, f"Email: {email}\n")
-            output_text.insert(tk.END, f"Proof of Enrollment Images: {', '.join(proof_image_links) if proof_image_links else 'None'}\n")
+            output_text.insert(tk.END, "Proof of Enrollment Images:\n")
+            
+            if proof_image_links:
+                for index, link in enumerate(proof_image_links, start=1):
+                    insert_hyperlink(output_text, f"Image #{index}", link)
+            else:
+                output_text.insert(tk.END, "None\n")
             
             if not fields.get('Action: Find PR link', False):
                 airtable.update(record_id, {'Action: Find PR link': True})
@@ -81,7 +98,7 @@ def create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=25, **kwargs):
 root = tk.Tk()
 root.title("Airtable Record Finder")
 root.configure(bg="#f0f0f0")
-root.geometry("600x00")
+root.geometry("600x500")
 
 main_frame = tk.Frame(root, padx=20, pady=20, bg="#f0f0f0")
 main_frame.pack(expand=True, fill=tk.BOTH)
